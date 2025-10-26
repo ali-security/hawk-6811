@@ -550,6 +550,25 @@ describe('Server', function () {
             });
         });
 
+        it('errors on an bad host header (includes path and query)', function (done) {
+
+            var req = {
+                method: 'GET',
+                url: '/resource/4?filter=a',
+                headers: {
+                    host: 'example.com:8080/path?x=z',
+                    authorization: 'Hawk id="123", ts="1353788437", nonce="k3j4h2", mac="/qwS4UjfVWMcUyW6EEgUH4jlr7T/wuKe3dKijvTvSos=", ext="hello"'
+                }
+            };
+
+            Hawk.server.authenticate(req, credentialsFunc, { localtimeOffsetMsec: 1353788437000 - Hawk.utils.now() }, function (err, credentials, artifacts) {
+
+                expect(err).to.exist();
+                expect(err.output.payload.message).to.equal('Invalid Host header');
+                done();
+            });
+        });
+
         it('errors on an bad host header (pad port)', function (done) {
 
             var req = {
